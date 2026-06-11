@@ -6,7 +6,50 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $pdo = new PDO('mysql:host=localhost;dbname=kic_practice;charset=utf8', 'root', '');
-$requests = $pdo->query("SELECT * FROM requests ORDER BY date DESC")->fetchAll();
+
+// Получаем параметры
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
+$status_filter = isset($_GET['status']) ? trim($_GET['status']) : '';
+$sort = isset($_GET['sort']) ? $_GET['sort'] : 'date';
+$order = isset($_GET['order']) && $_GET['order'] == 'asc' ? 'ASC' : 'DESC';
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$per_page = 10;
+$offset = ($page - 1) * $per_page;
+
+// Разрешённые поля для сортировки
+$allowed_sorts = ['id', 'date', 'event_name', 'customer', 'deadline', 'status'];
+if (!in_array($sort, $allowed_sorts)) {
+    $sort = 'date';
+}
+
+// Базовый запрос
+$sql = "SELECT * FROM requests WHERE 1=1";
+$count_sql = "SELECT COUNT(*) FROM requests WHERE 1=1";
+$params = [];
+
+if ($search !== '') {
+    $sql .= " AND customer LIKE ?";
+    $count_sql .= " AND customer LIKE ?";
+    $params[] = "%$search%";
+}
+
+if ($status_filter !== '') {
+    $sql .= " AND status = ?";
+    $count_sql .= " AND status = ?";
+    $params[] = $status_filter;
+}
+
+// Получаем общее количество записей
+$count_stmt = $pdo->prepare($count_sql);
+$count_stmt->execute($params);
+$total = $count_stmt->fetchColumn();
+$total_pages = ceil($total / $per_page);
+
+// Основной запрос с сортировкой и пагинацией
+$sql .= " ORDER BY $sort $order LIMIT $per_page OFFSET $offset";
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
+$requests = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -14,287 +57,51 @@ $requests = $pdo->query("SELECT * FROM requests ORDER BY date DESC")->fetchAll()
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Список заявок - КИЦ пгт. Октябрьское</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
-            background: linear-gradient(135deg, #eef2f7 0%, #d4dee8 100%);
-            min-height: 100vh;
-            padding: 30px 20px;
-        }
-
-        /* Главный контейнер */
-        .main-container {
-            max-width: 1300px;
-            margin: 0 auto;
-        }
-
-        /* Карточка контента */
-        .content-card {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
-        }
-
-        /* Шапка с логотипом */
-        .header {
-            background: #1e3a5f;
-            padding: 20px 30px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .logo-placeholder {
-            width: 50px;
-            height: 50px;
-            background: rgba(255,255,255,0.15);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-        }
-
-        .header h1 {
-            color: white;
-            font-size: 1.3rem;
-            font-weight: 500;
-        }
-
-        .header h2 {
-            color: rgba(255,255,255,0.8);
-            font-size: 0.85rem;
-            font-weight: 400;
-        }
-
-        .user-info {
-            background: rgba(255,255,255,0.1);
-            padding: 8px 18px;
-            border-radius: 40px;
-            color: white;
-            font-size: 0.85rem;
-        }
-
-        .user-info a {
-            color: #ffd966;
-            text-decoration: none;
-            margin-left: 10px;
-        }
-
-        .user-info a:hover {
-            text-decoration: underline;
-        }
-
-        /* Навигационная полоска */
-        .nav-bar {
-            background: #f8f9fc;
-            padding: 12px 30px;
-            border-bottom: 1px solid #eef2f7;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .nav-bar a {
-            color: #1e3a5f;
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .btn-add {
-            background: #1e3a5f;
-            color: white !important;
-            padding: 8px 20px;
-            border-radius: 40px;
-            transition: background 0.2s;
-        }
-
-        .btn-add:hover {
-            background: #0f2c48;
-        }
-
-        /* Основной контент */
-        .content {
-            padding: 30px;
-        }
-
-        .content h2 {
-            color: #1e3a5f;
-            font-size: 1.3rem;
-            margin-bottom: 20px;
-            border-left: 4px solid #c9a03d;
-            padding-left: 15px;
-        }
-
-        /* Таблица */
-        .table-wrapper {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-        }
-
-        th {
-            background: #eef2f7;
-            color: #1e3a5f;
-            padding: 14px 12px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 0.85rem;
-            border-bottom: 2px solid #dce3ec;
-        }
-
-        td {
-            padding: 12px;
-            border-bottom: 1px solid #eef2f7;
-            vertical-align: middle;
-            font-size: 0.9rem;
-        }
-
-        tr:hover {
-            background: #fafbfd;
-        }
-
-        /* Кнопки действий */
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .btn-edit {
-            background: #eef2f7;
-            color: #1e3a5f;
-            padding: 5px 14px;
-            border-radius: 20px;
-            text-decoration: none;
-            font-size: 0.75rem;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-
-        .btn-edit:hover {
-            background: #e2e8f0;
-        }
-
-        .btn-delete {
-            background: #fdecea;
-            color: #b33;
-            padding: 5px 14px;
-            border-radius: 20px;
-            text-decoration: none;
-            font-size: 0.75rem;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-
-        .btn-delete:hover {
-            background: #f8d7da;
-            color: #a00;
-        }
-
-        /* Статусы */
-        .status-new {
-            background: #eef2f7;
-            color: #1e3a5f;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            display: inline-block;
-        }
-
-        .status-work {
-            background: #fff3e0;
-            color: #c9a03d;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            display: inline-block;
-        }
-
-        .status-done {
-            background: #e6f7e6;
-            color: #2e7d32;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            display: inline-block;
-        }
-
-        /* Пустое состояние */
-        .empty-state {
-            text-align: center;
-            padding: 50px;
-            color: #8a9bb0;
-        }
-
-        /* Адаптивность */
-        @media (max-width: 800px) {
-            body {
-                padding: 15px;
-            }
-            .content {
-                padding: 20px;
-            }
-            .header {
-                flex-direction: column;
-                text-align: center;
-            }
-            th, td {
-                font-size: 0.8rem;
-                padding: 8px;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="main-container">
         <div class="content-card">
-            <!-- Шапка -->
             <div class="header">
                 <div class="logo-area">
-                    <div class="logo-placeholder">🎭</div>
+                    <div><img src="9855_logo.png" alt="Логотип КИЦ"></div>
                     <div>
                         <h1>МБУК «Культурно-информационный центр»</h1>
                         <h2>пгт. Октябрьское</h2>
                     </div>
                 </div>
                 <div class="user-info">
-                    👤 <?= htmlspecialchars($_SESSION['login']) ?>
-                    <a href="logout.php">Выйти</a>
+                    <?= htmlspecialchars($_SESSION['login']) ?> | <a href="logout.php">Выйти</a>
                 </div>
             </div>
 
-            <!-- Навигация -->
             <div class="nav-bar">
-                <a href="index.php">📋 Все заявки</a>
+                <a href="index.php"> Все заявки</a>
                 <a href="add.php" class="btn-add">➕ Новая заявка</a>
+                <a href="export.php<?= (!empty($search) || !empty($status_filter)) ? '?' . http_build_query(['search' => $search, 'status' => $status_filter]) : '' ?>" class="btn-export"> Экспорт в Excel</a>
             </div>
 
-            <!-- Контент -->
+            <div class="filter-area">
+                <form method="get" action="index.php" style="display: flex; gap: 10px; flex-wrap: wrap; width: 100%;">
+                    <input type="text" name="search" class="search-input" placeholder="🔍 Поиск по заказчику..." value="<?= htmlspecialchars($search) ?>">
+                    <select name="status" class="status-select">
+                        <option value=""> Все статусы</option>
+                        <option value="Новая" <?= $status_filter == 'Новая' ? 'selected' : '' ?>>Новая</option>
+                        <option value="В работе" <?= $status_filter == 'В работе' ? 'selected' : '' ?>>В работе</option>
+                        <option value="Готово" <?= $status_filter == 'Готово' ? 'selected' : '' ?>>Готово</option>
+                    </select>
+                    <button type="submit" class="btn-search"> Применить</button>
+                    <?php if ($search !== '' || $status_filter !== ''): ?>
+                        <a href="index.php" class="btn-clear">Сбросить всё</a>
+                    <?php endif; ?>
+                </form>
+                <?php if ($search !== '' || $status_filter !== ''): ?>
+                    <div class="filter-info">
+                         Фильтр: <?= $search ? "поиск «$search» " : '' ?><?= $status_filter ? "статус «$status_filter»" : '' ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+
             <div class="content">
                 <h2>Список заявок на полиграфическую продукцию</h2>
                 
@@ -303,12 +110,12 @@ $requests = $pdo->query("SELECT * FROM requests ORDER BY date DESC")->fetchAll()
                         <table>
                             <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Дата</th>
-                                    <th>Продукция / мероприятие</th>
-                                    <th>Заказчик</th>
-                                    <th>Срок</th>
-                                    <th>Статус</th>
+                                    <th><a href="?sort=id&order=<?= $sort=='id' && $order=='DESC' ? 'asc' : 'desc' ?>&search=<?= urlencode($search) ?>&status=<?= urlencode($status_filter) ?>&page=<?= $page ?>">ID <?= $sort=='id' ? ($order=='DESC' ? '▼' : '▲') : '' ?></a></th>
+                                    <th><a href="?sort=date&order=<?= $sort=='date' && $order=='DESC' ? 'asc' : 'desc' ?>&search=<?= urlencode($search) ?>&status=<?= urlencode($status_filter) ?>&page=<?= $page ?>">Дата <?= $sort=='date' ? ($order=='DESC' ? '▼' : '▲') : '' ?></a></th>
+                                    <th><a href="?sort=event_name&order=<?= $sort=='event_name' && $order=='DESC' ? 'asc' : 'desc' ?>&search=<?= urlencode($search) ?>&status=<?= urlencode($status_filter) ?>&page=<?= $page ?>">Продукция <?= $sort=='event_name' ? ($order=='DESC' ? '▼' : '▲') : '' ?></a></th>
+                                    <th><a href="?sort=customer&order=<?= $sort=='customer' && $order=='DESC' ? 'asc' : 'desc' ?>&search=<?= urlencode($search) ?>&status=<?= urlencode($status_filter) ?>&page=<?= $page ?>">Заказчик <?= $sort=='customer' ? ($order=='DESC' ? '▼' : '▲') : '' ?></a></th>
+                                    <th><a href="?sort=deadline&order=<?= $sort=='deadline' && $order=='DESC' ? 'asc' : 'desc' ?>&search=<?= urlencode($search) ?>&status=<?= urlencode($status_filter) ?>&page=<?= $page ?>">Срок <?= $sort=='deadline' ? ($order=='DESC' ? '▼' : '▲') : '' ?></a></th>
+                                    <th><a href="?sort=status&order=<?= $sort=='status' && $order=='DESC' ? 'asc' : 'desc' ?>&search=<?= urlencode($search) ?>&status=<?= urlencode($status_filter) ?>&page=<?= $page ?>">Статус <?= $sort=='status' ? ($order=='DESC' ? '▼' : '▲') : '' ?></a></th>
                                     <th>Действия</th>
                                 </tr>
                             </thead>
@@ -353,10 +160,26 @@ $requests = $pdo->query("SELECT * FROM requests ORDER BY date DESC")->fetchAll()
                             </tbody>
                         </table>
                     </div>
+                    
+                    <?php if ($total_pages > 1): ?>
+                    <div class="pagination">
+                        <?php if ($page > 1): ?>
+                            <a href="?page=<?= $page-1 ?>&sort=<?= $sort ?>&order=<?= $order ?>&search=<?= urlencode($search) ?>&status=<?= urlencode($status_filter) ?>">← Предыдущая</a>
+                        <?php endif; ?>
+                        <span class="active">Страница <?= $page ?> из <?= $total_pages ?></span>
+                        <?php if ($page < $total_pages): ?>
+                            <a href="?page=<?= $page+1 ?>&sort=<?= $sort ?>&order=<?= $order ?>&search=<?= urlencode($search) ?>&status=<?= urlencode($status_filter) ?>">Следующая →</a>
+                        <?php endif; ?>
+                    </div>
+                    <?php endif; ?>
                 <?php else: ?>
                     <div class="empty-state">
-                        🎨 Пока нет ни одной заявки<br>
-                        <a href="add.php" style="color: #1e3a5f; margin-top: 10px; display: inline-block;">➕ Создать первую заявку</a>
+                        <?php if ($search !== '' || $status_filter !== ''): ?>
+                             🔍 По заданным критериям ничего не найдено.<br>
+                            <a href="index.php" style="color: #1e3a5f;">Показать все заявки</a>
+                        <?php else: ?>
+                              Пока нет ни одной заявки
+                        <?php endif; ?>
                     </div>
                 <?php endif; ?>
             </div>

@@ -7,11 +7,22 @@ if (!isset($_SESSION['user_id'])) {
 
 $pdo = new PDO('mysql:host=localhost;dbname=kic_practice;charset=utf8', 'root', '');
 
+$errors = [];
+$form_data = ['date' => date('Y-m-d'), 'event_name' => '', 'customer' => '', 'deadline' => '', 'status' => 'Новая'];
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $stmt = $pdo->prepare("INSERT INTO requests (date, event_name, customer, deadline, status) VALUES (?, ?, ?, ?, ?)");
-    $stmt->execute([$_POST['date'], $_POST['event_name'], $_POST['customer'], $_POST['deadline'], $_POST['status']]);
-    header('Location: index.php');
-    exit;
+    $form_data = $_POST;
+    
+    if (empty($_POST['event_name'])) $errors['event_name'] = 'Укажите наименование продукции';
+    if (empty($_POST['customer'])) $errors['customer'] = 'Укажите заказчика';
+    if (empty($_POST['deadline'])) $errors['deadline'] = 'Укажите срок выполнения';
+    
+    if (count($errors) == 0) {
+        $stmt = $pdo->prepare("INSERT INTO requests (date, event_name, customer, deadline, status) VALUES (?, ?, ?, ?, ?)");
+        $stmt->execute([$_POST['date'], $_POST['event_name'], $_POST['customer'], $_POST['deadline'], $_POST['status']]);
+        header('Location: index.php');
+        exit;
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -20,150 +31,77 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Новая заявка - КИЦ пгт. Октябрьское</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
-            background: linear-gradient(135deg, #eef2f7 0%, #d4dee8 100%);
-            min-height: 100vh;
-            padding: 30px 20px;
-        }
-
-        .main-container {
-            max-width: 700px;
-            margin: 0 auto;
-        }
-
-        .content-card {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
-        }
-
-        .header {
-            background: #1e3a5f;
-            padding: 20px 30px;
-        }
-
-        .header h1 {
-            color: white;
-            font-size: 1.3rem;
-            font-weight: 500;
-        }
-
-        .header p {
-            color: rgba(255,255,255,0.8);
-            font-size: 0.85rem;
-            margin-top: 5px;
-        }
-
-        .form-area {
-            padding: 30px;
-        }
-
-        .form-group {
-            margin-bottom: 25px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: #1e3a5f;
-            margin-bottom: 8px;
-        }
-
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid #d0d7de;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-family: inherit;
-            transition: all 0.2s;
-        }
-
-        .form-group input:focus, .form-group select:focus {
-            outline: none;
-            border-color: #c9a03d;
-            box-shadow: 0 0 0 3px rgba(201, 160, 61, 0.2);
-        }
-
-        .button-group {
-            display: flex;
-            gap: 15px;
-            margin-top: 30px;
-        }
-
-        .btn-submit {
-            background: #1e3a5f;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 40px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn-submit:hover {
-            background: #0f2c48;
-        }
-
-        .btn-cancel {
-            background: #eef2f7;
-            color: #1e3a5f;
-            text-decoration: none;
-            padding: 12px 30px;
-            border-radius: 40px;
-            font-weight: 600;
-            transition: background 0.2s;
-        }
-
-        .btn-cancel:hover {
-            background: #e2e8f0;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
 </head>
 <body>
     <div class="main-container">
         <div class="content-card">
             <div class="header">
-                <h1>📝 Новая заявка на полиграфию</h1>
-                <p>МБУК «Культурно-информационный центр» | пгт. Октябрьское</p>
+                <div class="logo-area">
+                    <div><img src="9855_logo.png" alt="Логотип КИЦ"></div>
+                    <div>
+                        <h1>МБУК «Культурно-информационный центр»</h1>
+                        <h2>пгт. Октябрьское</h2>
+                    </div>
+                </div>
+                <div class="user-info">
+                    <?= htmlspecialchars($_SESSION['login']) ?> | <a href="logout.php">Выйти</a>
+                </div>
             </div>
+
+            <div class="nav-bar">
+                <a href="index.php"> Все заявки</a>
+                <a href="add.php" class="btn-add"> Новая заявка</a>
+                <a href="export.php" class="btn-export"> Экспорт в Excel</a>
+            </div>
+
             <div class="form-area">
-                <form method="post">
+                <h2 class="page-title">Новая заявка на полиграфию</h2>
+                
+                <?php if (count($errors) > 0): ?>
+                    <div class="alert-error">
+                        ⚠️ Пожалуйста, исправьте ошибки в форме.
+                    </div>
+                <?php endif; ?>
+                
+                <form method="post" id="mainForm">
                     <div class="form-group">
-                        <label>📅 Дата заявки</label>
-                        <input type="date" name="date" required>
+                        <label>Дата заявки</label>
+                        <input type="date" name="date" value="<?= $form_data['date'] ?>" required>
                     </div>
                     <div class="form-group">
-                        <label>🎨 Продукция / мероприятие</label>
-                        <input type="text" name="event_name" placeholder="Например: Афиша «День посёлка», Баннер для сцены..." required>
+                        <label>Продукция / мероприятие <span style="color:#e74c3c">*</span></label>
+                        <input type="text" name="event_name" class="<?= isset($errors['event_name']) ? 'error' : '' ?>" value="<?= htmlspecialchars($form_data['event_name']) ?>" placeholder="Например: Афиша «День посёлка», Баннер для сцены...">
+                        <?php if (isset($errors['event_name'])): ?>
+                            <span class="error-message">⚠️ <?= $errors['event_name'] ?></span>
+                        <?php endif; ?>
                     </div>
                     <div class="form-group">
-                        <label>👤 Заказчик</label>
-                        <input type="text" name="customer" placeholder="ФИО или организация" required>
+                        <label>Заказчик <span style="color:#e74c3c">*</span></label>
+                        <input type="text" name="customer" class="<?= isset($errors['customer']) ? 'error' : '' ?>" value="<?= htmlspecialchars($form_data['customer']) ?>" placeholder="ФИО или организация">
+                        <?php if (isset($errors['customer'])): ?>
+                            <span class="error-message">⚠️ <?= $errors['customer'] ?></span>
+                        <?php endif; ?>
                     </div>
                     <div class="form-group">
-                        <label>⏰ Срок выполнения</label>
-                        <input type="date" name="deadline" required>
+                        <label>Срок выполнения <span style="color:#e74c3c">*</span></label>
+                        <input type="date" name="deadline" class="<?= isset($errors['deadline']) ? 'error' : '' ?>" value="<?= $form_data['deadline'] ?>">
+                        <?php if (isset($errors['deadline'])): ?>
+                            <span class="error-message">⚠️ <?= $errors['deadline'] ?></span>
+                        <?php endif; ?>
                     </div>
                     <div class="form-group">
-                        <label>📌 Статус</label>
+                        <label>Статус</label>
                         <select name="status">
-                            <option value="Новая">Новая</option>
-                            <option value="В работе">В работе</option>
-                            <option value="Готово">Готово</option>
+                            <option value="Новая" <?= $form_data['status'] == 'Новая' ? 'selected' : '' ?>>Новая</option>
+                            <option value="В работе" <?= $form_data['status'] == 'В работе' ? 'selected' : '' ?>>В работе</option>
+                            <option value="Готово" <?= $form_data['status'] == 'Готово' ? 'selected' : '' ?>>Готово</option>
                         </select>
                     </div>
                     <div class="button-group">
-                        <button type="submit" class="btn-submit">✅ Сохранить заявку</button>
-                        <a href="index.php" class="btn-cancel">❌ Отмена</a>
+                        <button type="submit" class="btn-submit">Сохранить заявку</button>
+                        <a href="index.php" class="btn-cancel">Отмена</a>
                     </div>
                 </form>
             </div>
