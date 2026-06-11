@@ -7,7 +7,7 @@ if (!isset($_SESSION['user_id'])) {
 
 $pdo = new PDO('mysql:host=localhost;dbname=kic_practice;charset=utf8', 'root', '');
 
-// Получаем параметры
+// Получаем параметры — здесь ВСЕГДА определёны переменные
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $status_filter = isset($_GET['status']) ? trim($_GET['status']) : '';
 $sort = isset($_GET['sort']) ? $_GET['sort'] : 'date';
@@ -77,7 +77,7 @@ $requests = $stmt->fetchAll();
 
             <div class="nav-bar">
                 <a href="index.php"> Все заявки</a>
-                <a href="add.php" class="btn-add">➕ Новая заявка</a>
+                <a href="add.php" class="btn-add"> Новая заявка</a>
                 <a href="export.php<?= (!empty($search) || !empty($status_filter)) ? '?' . http_build_query(['search' => $search, 'status' => $status_filter]) : '' ?>" class="btn-export"> Экспорт в Excel</a>
             </div>
 
@@ -95,9 +95,12 @@ $requests = $stmt->fetchAll();
                         <a href="index.php" class="btn-clear">Сбросить всё</a>
                     <?php endif; ?>
                 </form>
+                
                 <?php if ($search !== '' || $status_filter !== ''): ?>
                     <div class="filter-info">
-                         Фильтр: <?= $search ? "поиск «$search» " : '' ?><?= $status_filter ? "статус «$status_filter»" : '' ?>
+                         Фильтр: 
+                        <?php if ($search !== ''): ?>поиск «<?= htmlspecialchars($search) ?>» <?php endif; ?>
+                        <?php if ($status_filter !== ''): ?>статус «<?= htmlspecialchars($status_filter) ?>»<?php endif; ?>
                     </div>
                 <?php endif; ?>
             </div>
