@@ -5,6 +5,12 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+// Проверка прав: только admin может удалять
+if ($_SESSION['role'] !== 'admin') {
+    header('Location: index.php');
+    exit;
+}
+
 $pdo = new PDO('mysql:host=localhost;dbname=kic_practice;charset=utf8', 'root', '');
 $stmt = $pdo->prepare("DELETE FROM requests WHERE id = ?");
 $stmt->execute([$_GET['id']]);

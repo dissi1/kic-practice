@@ -5,6 +5,12 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+// Проверка прав: только admin может добавлять
+if ($_SESSION['role'] !== 'admin') {
+    header('Location: index.php');
+    exit;
+}
+
 $pdo = new PDO('mysql:host=localhost;dbname=kic_practice;charset=utf8', 'root', '');
 
 $errors = [];
@@ -16,6 +22,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($_POST['event_name'])) $errors['event_name'] = 'Укажите наименование продукции';
     if (empty($_POST['customer'])) $errors['customer'] = 'Укажите заказчика';
     if (empty($_POST['deadline'])) $errors['deadline'] = 'Укажите срок выполнения';
+    
+    if (strlen($_POST['event_name']) > 100) $errors['event_name'] = 'Название продукции не должно превышать 100 символов';
+    if (strlen($_POST['customer']) > 100) $errors['customer'] = 'Заказчик не должен превышать 100 символов';
+    
+    if (!empty($_POST['date']) && !empty($_POST['deadline'])) {
+        if ($_POST['date'] > $_POST['deadline']) {
+            $errors['deadline'] = 'Срок выполнения не может быть раньше даты заявки';
+        }
+    }
     
     if (count($errors) == 0) {
         $stmt = $pdo->prepare("INSERT INTO requests (date, event_name, customer, deadline, status) VALUES (?, ?, ?, ?, ?)");
@@ -35,27 +50,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <script src="script.js" defer></script>
 </head>
 <body>
-    <div class="main-container">
-        <div class="content-card">
-            <div class="header">
-                <div class="logo-area">
-                    <div><img src="9855_logo.png" alt="Логотип КИЦ"></div>
-                    <div>
-                        <h1>МБУК «Культурно-информационный центр»</h1>
-                        <h2>пгт. Октябрьское</h2>
-                    </div>
-                </div>
-                <div class="user-info">
-                    <?= htmlspecialchars($_SESSION['login']) ?> | <a href="logout.php">Выйти</a>
+<div class="main-container">
+    <div class="content-card">
+        <div class="header">
+            <div class="logo-area">
+                <div><img src="9855_logo.png" alt="Логотип КИЦ"></div>
+                <div>
+                    <h1>МБУК «Культурно-информационный центр»</h1>
+                    <h2>пгт. Октябрьское</h2>
                 </div>
             </div>
+            <div class="user-info">
+                <?= htmlspecialchars($_SESSION['login']) ?> | <a href="logout.php">Выйти</a>
+            </div>
+        </div>
 
-            <div class="nav-bar">
-                <a href="index.php"> Все заявки</a>
+        <div class="nav-bar">
+            <a href="index.php"> Все заявки</a>
+            <?php if ($_SESSION['role'] == 'admin'): ?>
                 <a href="add.php" class="btn-add"> Новая заявка</a>
-                <a href="export.php" class="btn-export"> Экспорт в Excel</a>
-            </div>
+            <?php endif; ?>
+            <a href="export.php" class="btn-export"> Экспорт в Excel</a>
+        </div>
 
+        <div class="content">
+            <div class="breadcrumbs">
+                <a href="index.php"> Главная</a> / <span>Новая заявка</span>
+            </div>
+            
             <div class="form-area">
                 <h2 class="page-title">Новая заявка на полиграфию</h2>
                 
@@ -72,16 +94,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </div>
                     <div class="form-group">
                         <label>Продукция / мероприятие <span style="color:#e74c3c">*</span></label>
-                        <input type="text" name="event_name" class="<?= isset($errors['event_name']) ? 'error' : '' ?>" value="<?= htmlspecialchars($form_data['event_name']) ?>" placeholder="Например: Афиша «День посёлка», Баннер для сцены...">
+                        <input type="text" name="event_name" 
+                            class="<?= isset($errors['event_name']) ? 'error' : '' ?>" 
+                            value="<?= htmlspecialchars($form_data['event_name']) ?>" 
+                            placeholder="Например: Афиша «День посёлка», Баннер для сцены..."
+                            maxlength="100">
                         <?php if (isset($errors['event_name'])): ?>
                             <span class="error-message">⚠️ <?= $errors['event_name'] ?></span>
+                        <?php else: ?>
+                            <span class="hint">Максимум 100 символов</span>
                         <?php endif; ?>
                     </div>
                     <div class="form-group">
                         <label>Заказчик <span style="color:#e74c3c">*</span></label>
-                        <input type="text" name="customer" class="<?= isset($errors['customer']) ? 'error' : '' ?>" value="<?= htmlspecialchars($form_data['customer']) ?>" placeholder="ФИО или организация">
+                        <input type="text" name="customer" 
+                            class="<?= isset($errors['customer']) ? 'error' : '' ?>" 
+                            value="<?= htmlspecialchars($form_data['customer']) ?>" 
+                            placeholder="ФИО или организация"
+                            maxlength="100">
                         <?php if (isset($errors['customer'])): ?>
                             <span class="error-message">⚠️ <?= $errors['customer'] ?></span>
+                        <?php else: ?>
+                            <span class="hint">Максимум 100 символов</span>
                         <?php endif; ?>
                     </div>
                     <div class="form-group">
@@ -100,12 +134,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </select>
                     </div>
                     <div class="button-group">
-                        <button type="submit" class="btn-submit">Сохранить заявку</button>
-                        <a href="index.php" class="btn-cancel">Отмена</a>
+                        <button type="submit" class="btn-submit"> Сохранить заявку</button>
+                        <a href="index.php" class="btn-cancel"> Отмена</a>
                     </div>
                 </form>
             </div>
         </div>
     </div>
+</div>
+<script>
+    document.querySelector('form').addEventListener('submit', function(e) {
+        let btn = this.querySelector('button[type="submit"]');
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = ' Сохранение...';
+        }
+    });
+</script>
 </body>
 </html>

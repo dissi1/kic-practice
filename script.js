@@ -1,6 +1,5 @@
 // Валидация формы добавления и редактирования
 document.addEventListener('DOMContentLoaded', function() {
-    // Находим форму на странице (если она есть)
     const mainForm = document.getElementById('mainForm');
     const editForm = document.getElementById('editForm');
     const activeForm = mainForm || editForm;
@@ -39,7 +38,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Убираем подсветку ошибок при вводе
         document.querySelectorAll('input').forEach(input => {
             input.addEventListener('input', function() {
                 this.classList.remove('error');

@@ -1,3 +1,6 @@
+/* Подключение шрифтов из Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Playfair+Display:wght@400;500;600;700;800;900&display=swap');
+
 * {
     margin: 0;
     padding: 0;
@@ -5,24 +8,28 @@
 }
 
 body {
-    font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+    font-family: 'Inter', 'Segoe UI', 'Roboto', 'Arial', sans-serif;
     background: linear-gradient(135deg, #eef2f7 0%, #d4dee8 100%);
     min-height: 100vh;
-    padding: 30px 20px;
+    padding: 25px;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #1a2a3a;
 }
 
 .main-container {
-    max-width: 1300px;
+    max-width: 1400px;
     margin: 0 auto;
 }
 
 .content-card {
     background: white;
-    border-radius: 20px;
+    border-radius: 24px;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
     overflow: hidden;
 }
 
+/* ===== ШАПКА ===== */
 .header {
     background: #1e3a5f;
     padding: 20px 30px;
@@ -36,43 +43,47 @@ body {
 .logo-area {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 20px;
 }
 
 .logo-area div:first-child {
     background: white;
-    border-radius: 12px;
-    padding: 5px;
+    border-radius: 16px;
+    padding: 8px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 60px;
-    height: 60px;
+    width: 70px;
+    height: 70px;
 }
 
 .logo-area img {
-    max-width: 50px;
-    max-height: 50px;
+    max-width: 54px;
+    max-height: 54px;
 }
 
 .header h1 {
+    font-family: 'Playfair Display', 'Georgia', 'Times New Roman', serif;
     color: white;
-    font-size: 1.3rem;
-    font-weight: 500;
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.3px;
 }
 
 .header h2 {
-    color: rgba(255, 255, 255, 0.8);
+    font-family: 'Inter', sans-serif;
+    color: rgba(255, 255, 255, 0.85);
     font-size: 0.85rem;
     font-weight: 400;
 }
 
 .user-info {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 8px 18px;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 8px 20px;
     border-radius: 40px;
     color: white;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
+    font-weight: 500;
 }
 
 .user-info a {
@@ -81,33 +92,32 @@ body {
     margin-left: 10px;
 }
 
-.user-info a:hover {
-    text-decoration: underline;
-}
-
+/* ===== НАВИГАЦИЯ ===== */
 .nav-bar {
     background: #f8f9fc;
-    padding: 12px 30px;
+    padding: 15px 30px;
     border-bottom: 1px solid #eef2f7;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     flex-wrap: wrap;
-    gap: 15px;
+    gap: 20px;
 }
 
 .nav-bar a {
     color: #1e3a5f;
     text-decoration: none;
     font-weight: 500;
+    font-size: 1rem;
 }
 
 .btn-add {
     background: #1e3a5f;
     color: white !important;
-    padding: 8px 20px;
+    padding: 10px 24px;
     border-radius: 40px;
     transition: background 0.2s;
+    font-size: 0.95rem;
 }
 
 .btn-add:hover {
@@ -117,15 +127,17 @@ body {
 .btn-export {
     background: #2e7d32;
     color: white !important;
-    padding: 8px 20px;
+    padding: 10px 24px;
     border-radius: 40px;
     transition: background 0.2s;
+    font-size: 0.95rem;
 }
 
 .btn-export:hover {
     background: #1b5e20;
 }
 
+/* ===== ФИЛЬТРЫ ===== */
 .filter-area {
     padding: 15px 30px;
     background: white;
@@ -137,30 +149,39 @@ body {
 }
 
 .search-input, .status-select {
-    padding: 10px 16px;
+    padding: 12px 18px;
     border: 1px solid #d0d7de;
     border-radius: 40px;
-    font-family: inherit;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
 }
 
 .search-input {
     flex: 2;
-    min-width: 200px;
+    min-width: 220px;
 }
 
 .status-select {
     flex: 1;
-    min-width: 150px;
+    min-width: 160px;
     background: white;
     cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%231e3a5f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 12px;
+    padding-right: 35px;
 }
 
 .btn-search, .btn-clear {
-    padding: 10px 24px;
+    padding: 12px 28px;
     border-radius: 40px;
     font-weight: 500;
     cursor: pointer;
     border: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
 }
 
 .btn-search {
@@ -172,7 +193,6 @@ body {
     background: #eef2f7;
     color: #1e3a5f;
     text-decoration: none;
-    display: inline-block;
 }
 
 .filter-info {
@@ -181,26 +201,52 @@ body {
     margin-left: auto;
 }
 
+/* ===== ОСНОВНОЙ КОНТЕНТ ===== */
 .content {
     padding: 30px;
 }
 
-.content h2 {
-    color: #1e3a5f;
-    font-size: 1.3rem;
-    margin-bottom: 20px;
-    border-left: 4px solid #c9a03d;
-    padding-left: 15px;
+.breadcrumbs {
+    margin-bottom: 12px;
+    font-size: 0.85rem;
+    color: #8a9bb0;
 }
 
+.breadcrumbs a {
+    color: #1e3a5f;
+    text-decoration: none;
+}
+
+.breadcrumbs a:hover {
+    text-decoration: underline;
+}
+
+.breadcrumbs span {
+    color: #c9a03d;
+    font-weight: 500;
+}
+
+.content h2 {
+    font-family: 'Playfair Display', 'Georgia', serif;
+    color: #1e3a5f;
+    font-size: 1.6rem;
+    margin-bottom: 15px;
+    border-left: 5px solid #c9a03d;
+    padding-left: 15px;
+    font-weight: 800;
+}
+
+/* ===== ТАБЛИЦА ===== */
 .table-wrapper {
     overflow-x: auto;
+    margin-top: 10px;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
     background: white;
+    font-size: 0.95rem;
 }
 
 th {
@@ -208,47 +254,60 @@ th {
     color: #1e3a5f;
     padding: 14px 12px;
     text-align: left;
-    font-weight: 600;
-    cursor: pointer;
-    user-select: none;
-}
-
-th:hover {
-    background: #e2e8f0;
+    font-weight: 700;
+    font-size: 0.85rem;
+    border-bottom: 2px solid #d4dee8;
 }
 
 th a {
     color: #1e3a5f;
     text-decoration: none;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 5px;
+    font-weight: 700;
 }
 
 td {
-    padding: 12px;
+    padding: 12px 12px;
     border-bottom: 1px solid #eef2f7;
     vertical-align: middle;
     font-size: 0.9rem;
 }
 
-tr:hover {
-    background: #fafbfd;
+tbody tr:nth-child(even) {
+    background-color: #fafbfd;
 }
 
+tbody tr:hover {
+    background-color: #f2f5f9;
+}
+
+/* Просроченные заявки */
+.overdue-row {
+    background-color: #fff5f5 !important;
+}
+
+.overdue-row:hover {
+    background-color: #ffe8e8 !important;
+}
+
+/* ===== КНОПКИ ДЕЙСТВИЙ ===== */
 .action-buttons {
     display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-start;
 }
 
 .btn-edit, .btn-delete {
-    padding: 5px 14px;
-    border-radius: 20px;
+    padding: 6px 16px;
+    border-radius: 24px;
     text-decoration: none;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     font-weight: 500;
     transition: all 0.2s;
+    display: inline-block;
+    text-align: center;
 }
 
 .btn-edit {
@@ -270,36 +329,33 @@ tr:hover {
     color: #a00;
 }
 
+/* ===== СТАТУСЫ ===== */
+.status-new, .status-work, .status-done {
+    padding: 5px 14px;
+    border-radius: 24px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-block;
+    text-align: center;
+    min-width: 80px;
+}
+
 .status-new {
     background: #eef2f7;
     color: #1e3a5f;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    display: inline-block;
 }
 
 .status-work {
     background: #fff3e0;
     color: #c9a03d;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    display: inline-block;
 }
 
 .status-done {
     background: #e6f7e6;
     color: #2e7d32;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    display: inline-block;
 }
 
+/* ===== ПАГИНАЦИЯ ===== */
 .pagination {
     margin-top: 30px;
     display: flex;
@@ -309,11 +365,13 @@ tr:hover {
 }
 
 .pagination a, .pagination span {
-    padding: 8px 16px;
+    padding: 8px 18px;
     border-radius: 40px;
     text-decoration: none;
     background: #eef2f7;
     color: #1e3a5f;
+    font-size: 0.85rem;
+    font-weight: 500;
 }
 
 .pagination .active {
@@ -323,10 +381,12 @@ tr:hover {
 
 .empty-state {
     text-align: center;
-    padding: 50px;
+    padding: 60px;
     color: #8a9bb0;
+    font-size: 1rem;
 }
 
+/* ===== АДАПТИВНОСТЬ ===== */
 @media (max-width: 800px) {
     body {
         padding: 15px;
@@ -344,13 +404,39 @@ tr:hover {
     }
     .filter-info {
         text-align: center;
+        margin-left: 0;
+        margin-top: 8px;
     }
     th, td {
-        font-size: 0.8rem;
-        padding: 8px;
+        font-size: 0.75rem;
+        padding: 8px 6px;
+    }
+    .btn-edit, .btn-delete {
+        padding: 4px 12px;
+        font-size: 0.7rem;
+    }
+    .status-new, .status-work, .status-done {
+        padding: 3px 8px;
+        font-size: 0.65rem;
+        min-width: 60px;
+    }
+    .content h2 {
+        font-size: 1.3rem;
+    }
+    .header h1 {
+        font-size: 1.2rem;
+    }
+    .logo-area div:first-child {
+        width: 55px;
+        height: 55px;
+    }
+    .logo-area img {
+        max-width: 42px;
+        max-height: 42px;
     }
 }
-/* ===== СТИЛИ ДЛЯ ФОРМ (add.php, edit.php) ===== */
+
+/* ===== СТИЛИ ДЛЯ ФОРМ ===== */
 .form-area {
     padding: 30px;
 }
@@ -361,8 +447,8 @@ tr:hover {
 
 .form-group label {
     display: block;
-    font-size: 0.8rem;
-    font-weight: 600;
+    font-size: 0.95rem;
+    font-weight: 700;
     color: #1e3a5f;
     margin-bottom: 8px;
 }
@@ -373,8 +459,8 @@ tr:hover {
     padding: 12px 16px;
     border: 1px solid #d0d7de;
     border-radius: 12px;
-    font-size: 1rem;
-    font-family: inherit;
+    font-size: 0.95rem;
+    font-family: 'Inter', sans-serif;
     transition: all 0.2s;
     background: white;
 }
@@ -409,9 +495,9 @@ tr:hover {
     background: #1e3a5f;
     color: white;
     border: none;
-    padding: 12px 30px;
+    padding: 12px 32px;
     border-radius: 40px;
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 600;
     cursor: pointer;
     transition: background 0.2s;
@@ -425,9 +511,10 @@ tr:hover {
     background: #eef2f7;
     color: #1e3a5f;
     text-decoration: none;
-    padding: 12px 30px;
+    padding: 12px 32px;
     border-radius: 40px;
     font-weight: 600;
+    font-size: 0.95rem;
     transition: background 0.2s;
     display: inline-block;
 }
@@ -446,9 +533,101 @@ tr:hover {
 }
 
 .page-title {
+    font-family: 'Playfair Display', 'Georgia', serif;
     color: #1e3a5f;
     margin-bottom: 20px;
-    border-left: 4px solid #c9a03d;
+    border-left: 5px solid #c9a03d;
     padding-left: 15px;
-    font-size: 1.3rem;
+    font-size: 1.5rem;
+    font-weight: 800;
+}
+
+/* ===== СТИЛИ ДЛЯ СТРАНИЦЫ ВХОДА ===== */
+.login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: linear-gradient(135deg, #eef2f7 0%, #d4dee8 100%);
+}
+
+.login-card {
+    background: white;
+    max-width: 450px;
+    width: 100%;
+    border-radius: 24px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    text-align: center;
+}
+
+.login-card .header-strip {
+    background: #1e3a5f;
+    height: 6px;
+}
+
+.login-card .logo-area {
+    text-align: center;
+    padding: 35px 30px 20px;
+    border-bottom: 1px solid #eef2f7;
+}
+
+.login-card .logo-area .logo-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.login-card .logo-area .login-logo {
+    max-width: 80px;
+    height: auto;
+}
+
+.login-card .logo-area h1 {
+    font-family: 'Playfair Display', 'Georgia', serif;
+    color: #1e3a5f;
+    font-size: 1.8rem;
+    font-weight: 900;
+    margin-bottom: 0;
+    line-height: 1.3;
+}
+
+.login-card .form-area {
+    padding: 30px;
+}
+
+.login-card .form-group {
+    text-align: left;
+}
+
+.login-card .form-group label {
+    text-align: left;
+}
+
+.login-hint {
+    text-align: center;
+    margin-top: 25px;
+    font-size: 0.75rem;
+    color: #8a9bb0;
+    background: #f8f9fc;
+    padding: 12px;
+    border-radius: 12px;
+}
+
+.login-hint strong {
+    background: #eef2f7;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: #1e3a5f;
+}
+
+/* Подсказка "Максимум 100 символов" */
+.hint {
+    font-size: 0.7rem;
+    color: #5a6e7c;
+    font-style: italic;
+    font-weight: 700;
 }
